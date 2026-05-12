@@ -6,7 +6,8 @@
     "readTime": "7 min read",
     "publishedAt": "2026-05-12T08:00:00.000Z",
     "path": "https://m2zpicks.netlify.app/blogs/claude-4-review-2026.html",
-    "category": "Reviews"
+    "category": "Reviews",
+    "hero": "https://images.unsplash.com/photo-1518770660439?auto=format&fit=crop&w=1400&q=80"
   },
   {
     "slug": "is-jasper-ai-worth-it-2026",
@@ -15,7 +16,8 @@
     "readTime": "7 min read",
     "publishedAt": "2026-05-11T08:00:00.000Z",
     "path": "https://m2zpicks.netlify.app/blogs/is-jasper-ai-worth-it-2026.html",
-    "category": "Reviews"
+    "category": "Reviews",
+    "hero": "https://images.unsplash.com/photo-1518770660440?auto=format&fit=crop&w=1400&q=80"
   },
   {
     "slug": "chatgpt-vs-claude-2026",
@@ -24,7 +26,8 @@
     "readTime": "7 min read",
     "publishedAt": "2026-05-10T08:00:00.000Z",
     "path": "https://m2zpicks.netlify.app/blogs/chatgpt-vs-claude-2026.html",
-    "category": "Comparisons"
+    "category": "Comparisons",
+    "hero": "https://images.unsplash.com/photo-1518770660441?auto=format&fit=crop&w=1400&q=80"
   },
   {
     "slug": "cursor-vs-windsurf-2026",
@@ -33,7 +36,8 @@
     "readTime": "7 min read",
     "publishedAt": "2026-05-09T08:00:00.000Z",
     "path": "https://m2zpicks.netlify.app/blogs/cursor-vs-windsurf-2026.html",
-    "category": "Comparisons"
+    "category": "Comparisons",
+    "hero": "https://images.unsplash.com/photo-1518770660442?auto=format&fit=crop&w=1400&q=80"
   },
   {
     "slug": "top-30-ai-tools-this-week",
@@ -42,7 +46,8 @@
     "readTime": "7 min read",
     "publishedAt": "2026-05-08T08:00:00.000Z",
     "path": "https://m2zpicks.netlify.app/blogs/top-30-ai-tools-this-week.html",
-    "category": "Rankings"
+    "category": "Rankings",
+    "hero": "https://images.unsplash.com/photo-1518770660443?auto=format&fit=crop&w=1400&q=80"
   },
   {
     "slug": "best-free-ai-tools-2026",
@@ -51,7 +56,8 @@
     "readTime": "7 min read",
     "publishedAt": "2026-05-07T08:00:00.000Z",
     "path": "https://m2zpicks.netlify.app/blogs/best-free-ai-tools-2026.html",
-    "category": "Rankings"
+    "category": "Rankings",
+    "hero": "https://images.unsplash.com/photo-1518770660444?auto=format&fit=crop&w=1400&q=80"
   },
   {
     "slug": "how-to-use-claude-for-coding",
@@ -60,7 +66,8 @@
     "readTime": "7 min read",
     "publishedAt": "2026-05-06T08:00:00.000Z",
     "path": "https://m2zpicks.netlify.app/blogs/how-to-use-claude-for-coding.html",
-    "category": "Guides"
+    "category": "Guides",
+    "hero": "https://images.unsplash.com/photo-1518770660445?auto=format&fit=crop&w=1400&q=80"
   },
   {
     "slug": "best-ai-workflow-for-students",
@@ -69,7 +76,8 @@
     "readTime": "7 min read",
     "publishedAt": "2026-05-05T08:00:00.000Z",
     "path": "https://m2zpicks.netlify.app/blogs/best-ai-workflow-for-students.html",
-    "category": "Guides"
+    "category": "Guides",
+    "hero": "https://images.unsplash.com/photo-1518770660446?auto=format&fit=crop&w=1400&q=80"
   },
   {
     "slug": "openai-new-model-updates-may-2026",
@@ -78,7 +86,8 @@
     "readTime": "7 min read",
     "publishedAt": "2026-05-04T08:00:00.000Z",
     "path": "https://m2zpicks.netlify.app/blogs/openai-new-model-updates-may-2026.html",
-    "category": "News & Updates"
+    "category": "News & Updates",
+    "hero": "https://images.unsplash.com/photo-1518770660447?auto=format&fit=crop&w=1400&q=80"
   },
   {
     "slug": "google-gemini-latest-features-2026",
@@ -87,7 +96,8 @@
     "readTime": "7 min read",
     "publishedAt": "2026-05-03T08:00:00.000Z",
     "path": "https://m2zpicks.netlify.app/blogs/google-gemini-latest-features-2026.html",
-    "category": "News & Updates"
+    "category": "News & Updates",
+    "hero": "https://images.unsplash.com/photo-1518770660448?auto=format&fit=crop&w=1400&q=80"
   },
   {
     "slug": "best-chatgpt-alternatives-2026",
@@ -96,7 +106,8 @@
     "readTime": "7 min read",
     "publishedAt": "2026-05-02T08:00:00.000Z",
     "path": "https://m2zpicks.netlify.app/blogs/best-chatgpt-alternatives-2026.html",
-    "category": "Alternatives"
+    "category": "Alternatives",
+    "hero": "https://images.unsplash.com/photo-1518770660449?auto=format&fit=crop&w=1400&q=80"
   },
   {
     "slug": "midjourney-alternatives-for-designers",
@@ -105,6 +116,7 @@
     "readTime": "7 min read",
     "publishedAt": "2026-05-01T08:00:00.000Z",
     "path": "https://m2zpicks.netlify.app/blogs/midjourney-alternatives-for-designers.html",
-    "category": "Alternatives"
+    "category": "Alternatives",
+    "hero": "https://images.unsplash.com/photo-1518770660450?auto=format&fit=crop&w=1400&q=80"
   }
 ]

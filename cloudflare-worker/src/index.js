@@ -273,7 +273,8 @@ async function fetchAllBlogsFromAppwrite(env) {
   return blogs.map((b) => ({
     ...b,
     category: String(b.category || 'Guides').trim(),
-    path: String(b.path || '').trim()
+    path: String(b.path || '').trim(),
+    hero: String(b.hero || '').trim()
   }));
 }
 

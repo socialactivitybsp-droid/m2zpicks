@@ -42,7 +42,7 @@
     const latest = posts[0] || allPosts[0];
     latestWrap.innerHTML = `
       <article class="featured">
-        <img src="https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1400&q=80" alt="Latest AI blog" />
+        <img src="${latest.hero || 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1400&q=80'}" alt="${latest.title}" />
         <div>
           <p class="meta">Latest post</p>
           <h2><a href="${latest.path || (latest.slug + '.html')}">${latest.title}</a></h2>
@@ -53,6 +53,7 @@
 
     allWrap.innerHTML = posts.map((post) => `
       <article class="blog-card">
+        <img src="${post.hero || 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80'}" alt="${post.title}" style="width:100%;height:150px;object-fit:cover;border-radius:10px;margin-bottom:10px;" />
         <p class="meta">${fmtDate(post.publishedAt)}</p>
         <h3><a href="${post.path || (post.slug + '.html')}">${post.title}</a></h3>
         <p>${post.excerpt}</p>

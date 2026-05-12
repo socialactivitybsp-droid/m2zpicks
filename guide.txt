@@ -261,6 +261,7 @@ Each row in `blogs` collection must include:
 - `publishedAt` (datetime)
 - `path` (full URL, e.g. `https://m2zpicks.netlify.app/blogs/my-slug.html`)
 - `category`
+- `hero` (hero image URL for blog landing cards/featured block)
 
 Allowed categories currently used on site:
 - `Reviews`

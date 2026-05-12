@@ -124,6 +124,7 @@
     excerpt: String(blog?.excerpt || '').trim(),
     readTime: String(blog?.readTime || '').trim(),
     path: String(blog?.path || '').trim(),
+    hero: String(blog?.hero || '').trim(),
     category: String(blog?.category || 'Guides').trim(),
     publishedAt: blog?.publishedAt || blog?.$createdAt || null
   });
