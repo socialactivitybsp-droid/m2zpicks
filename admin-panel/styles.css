@@ -1,0 +1,15 @@
+:root{--bg:#0b1020;--card:#141c33;--text:#ecf1ff;--muted:#9cb0e3;--accent:#5b8cff;--sidebar:#0d1530;--border:#22345c;--input:#0b142d;--nav:#243862}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Arial} .app{display:flex;min-height:100vh}
+.sidebar{width:270px;background:var(--sidebar);border-right:1px solid var(--border);padding:14px;overflow-y:auto;overflow-x:hidden;position:sticky;top:0;height:100vh}.logo{font-weight:700;margin-bottom:14px}.logo small{display:block;color:#9bb0e2;font-weight:400}
+.nav-group{margin:12px 8px 6px;color:#7e93c5;font-size:12px}.nav-item{display:block;width:100%;text-align:left;padding:9px;border:0;background:transparent;color:#dce6ff;border-radius:8px;cursor:pointer}.nav-item.active,.nav-item:hover{background:var(--nav)}
+.main{flex:1;padding:14px}.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.topbar button{padding:8px 10px}
+.card{background:var(--card);border:1px solid #2c3f72;border-radius:12px;padding:14px;margin-bottom:12px}.narrow{max-width:420px}.hidden{display:none}
+input,textarea,button{border-radius:8px;border:1px solid var(--border);padding:10px;background:var(--input);color:var(--text)} button{background:var(--accent);border:0;cursor:pointer} .warn{background:#b45309}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.cards4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.metric{background:var(--input);border:1px solid var(--border);border-radius:10px;padding:10px}.metric small{color:var(--muted);display:block}
+.table-wrap{overflow:auto} table{width:100%;border-collapse:collapse} th,td{border-bottom:1px solid #2a3d70;padding:8px;text-align:left}.page{display:none}.page.active{display:block}
+.muted{color:var(--muted)} .error{color:#ff8f8f}.toggle{display:flex;align-items:center;gap:8px}
+@media(max-width:900px){.sidebar{position:fixed;left:-280px;top:0;height:100%;z-index:20;transition:.2s}body.sidebar-open .sidebar{left:0}.grid2,.cards4{grid-template-columns:1fr}}
+
+.main{height:100vh;overflow:auto;}
+
+#themeToggle,.theme-toggle{display:none!important}

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>M2Z Picks Admin</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+<div class="app" id="appRoot">
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">M2Z Picks <small>Admin Panel</small></div>
+    <nav>
+      <button class="nav-item active" data-page="dashboard">🏠 Dashboard</button>
+      <div class="nav-group">🤖 AI Tools</div>
+      <button class="nav-item" data-page="tools-all">All Tools</button>
+      <button class="nav-item" data-page="tools-add">Add New Tool</button>
+      <button class="nav-item" data-page="categories">Categories</button>
+      <button class="nav-item" data-page="creators">Creators CRUD</button>
+      <button class="nav-item" data-page="ranks">Ranks CRUD</button>
+      <div class="nav-group">✍️ Content / Blog</div>
+      <button class="nav-item" data-page="posts">All Posts</button>
+      <button class="nav-item" data-page="posts-create">Create Post</button>
+      <div class="nav-group">⭐ Featured / Trending</div>
+      <button class="nav-item" data-page="featured">Featured Tools</button>
+      <div class="nav-group">👥 Users</div>
+      <button class="nav-item" data-page="users">All Users</button>
+      <div class="nav-group">💰 Monetization</div>
+      <button class="nav-item" data-page="monetization">Ad placements</button>
+      <div class="nav-group">📊 Analytics</div>
+      <button class="nav-item" data-page="analytics">Traffic</button>
+      <div class="nav-group">⚙️ Settings</div>
+      <button class="nav-item" data-page="settings">General/SEO/API</button>
+      <div class="nav-group">🔐 Admin</div>
+      <button class="nav-item" id="logoutBtn">Logout</button>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button id="menuBtn">☰</button>
+      <h1 id="pageTitle">Dashboard</h1>
+    </header>
+
+    <section id="loginView" class="card narrow">
+      <h2>Admin Login</h2>
+      <form id="loginForm">
+        <input id="username" placeholder="Username" required />
+        <input id="password" type="password" placeholder="Password" required />
+        <button type="submit">Login</button>
+      </form>
+      <p id="loginError" class="error hidden">Invalid credentials.</p>
+    </section>
+
+    <section id="panelView" class="hidden">
+      
+
+      <section id="dashboard" class="page card active">
+        <div class="cards4">
+          <div class="metric"><small>Total tools</small><strong id="mTools">-</strong></div>
+          <div class="metric"><small>Total clicks*</small><strong id="mClicks">N/A</strong></div>
+          <div class="metric"><small>New tools*</small><strong id="mNew">N/A</strong></div>
+          <div class="metric"><small>Top tool*</small><strong id="mTop">N/A</strong></div>
+        </div>
+        <div class="row"><button id="loadStatsBtn">Load Stats</button><button data-page="tools-add">➕ Add tool</button></div>
+        <p class="muted">*Clicks/new/top need dedicated analytics fields not currently in schema.</p>
+      </section>
+
+      <section id="tools-all" class="page card">
+        <h3>All Tools</h3>
+        <div class="row"><input id="toolSearch" placeholder="Search tools" /><input id="toolCategoryFilter" placeholder="Filter category" /><button id="reloadToolsBtn">Reload</button></div>
+        <div class="table-wrap"><table><thead><tr><th>Name</th><th>Category</th><th>ID</th><th>Actions</th></tr></thead><tbody id="toolsTable"></tbody></table></div>
+        <div class="row"><button id="prevPageBtn">Prev</button><span id="pageLabel">Page 1</span><button id="nextPageBtn">Next</button></div>
+      </section>
+
+      <section id="tools-add" class="page card">
+        <h3>Add / Edit Tool</h3>
+        <div class="grid2">
+          <input id="toolDocId" placeholder="Document ID (for update/delete)" />
+          <input id="toolId" placeholder="Numeric Tool ID" />
+          <input id="toolTitle" placeholder="Tool Name" />
+          <input id="toolCategory" placeholder="Category" />
+          <input id="toolTags" placeholder="Tags comma separated" />
+          <input id="toolPricing" placeholder="Pricing: Free/Paid" />
+          <input id="toolLink" placeholder="Website link" />
+          <input id="toolThumb" placeholder="Thumbnail URL" />
+          <label class="toggle"><input id="toolFeatured" type="checkbox" /> Featured</label>
+          <textarea id="toolDescription" rows="5" placeholder="Long description"></textarea>
+        </div>
+        <div class="row"><button id="createToolBtn">Create Tool</button><button id="updateToolBtn">Update Tool</button><button id="deleteToolBtn" class="warn">Delete Tool</button></div>
+      </section>
+
+      <section id="categories" class="page card"><h3>Categories</h3><pre id="categoriesOut">Load tools to see categories.</pre></section>
+
+      <section id="creators" class="page card">
+        <h3>Creators CRUD</h3>
+        <div class="row"><input id="creatorDocId" placeholder="Creator Doc ID" /><textarea id="creatorPayload" rows="5" placeholder='{"name":"Creator","slug":"creator"}'></textarea></div>
+        <div class="row"><button id="listCreatorsBtn">List</button><button id="createCreatorBtn">Create</button><button id="updateCreatorBtn">Update</button><button id="deleteCreatorBtn" class="warn">Delete</button></div>
+      </section>
+
+      <section id="ranks" class="page card">
+        <h3>Ranks CRUD</h3>
+        <div class="row"><input id="rankDocId" placeholder="Rank Doc ID" /><textarea id="rankPayload" rows="5" placeholder='{"id":101,"overall":90}'></textarea></div>
+        <div class="row"><button id="listRanksBtn">List</button><button id="createRankBtn">Create</button><button id="updateRankBtn">Update</button><button id="deleteRankBtn" class="warn">Delete</button></div>
+      </section>
+
+      <section id="featured" class="page card"><h3>Featured / Trending</h3><p class="muted">Placeholders only: needs featured/trending fields and ranking strategy.</p></section>
+      <section id="posts" class="page card"><h3>All Posts</h3><p class="muted">Not added: no posts collection/schema in current repository.</p></section>
+      <section id="posts-create" class="page card"><h3>Create Post</h3><p class="muted">Not added: needs a dedicated blog backend collection/API.</p></section>
+      <section id="users" class="page card"><h3>Users</h3><p class="muted">Not added: needs auth/user admin permissions.</p></section>
+      <section id="monetization" class="page card"><h3>Monetization</h3><p class="muted">Not added: needs ad config storage and runtime integration.</p></section>
+      <section id="analytics" class="page card"><h3>Analytics</h3><p class="muted">Not added: needs click/traffic tracking pipeline.</p></section>
+      <section id="settings" class="page card"><h3>Settings</h3>
+        <p class="muted">General/SEO/API settings.</p>
+<section class="card">
+        <h3>API Access</h3>
+        <div class="grid2">
+          <input id="awEndpoint" value="https://sfo.cloud.appwrite.io/v1" />
+          <input id="awProject" value="m2zpicks" />
+          <input id="awDatabase" value="m2zpicks-db" />
+          <input id="awToolsTable" value="tools" />
+          <input id="awApiKey" type="password" placeholder="Paste Appwrite API key" />
+        </div>
+        <div class="row"><button id="saveKeyBtn">Save API Key</button><span id="keyStatus"></span></div>
+      </section>
+      </section>
+
+      <section class="card"><h3>Output</h3><pre id="output"></pre></section>
+    </section>
+  </main>
+</div>
+<script src="./script.js"></script>
+</body>
+</html>
