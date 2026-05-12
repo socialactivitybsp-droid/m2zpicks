@@ -1,28 +1,71 @@
 (async function () {
-  const posts = await window.AppwriteLayer.fetchLatestBlogs();
+  const allPosts = await window.AppwriteLayer.fetchLatestBlogs();
   const latestWrap = document.getElementById('latestBlog');
   const allWrap = document.getElementById('allBlogs');
+  const chipsWrap = document.getElementById('categoryChips');
+  const searchInput = document.getElementById('blogSearch');
 
-  if (!posts.length) {
+  const fmtDate = (value) => {
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? value : d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  };
+
+  if (!allPosts.length) {
     latestWrap.innerHTML = '<p>No blog posts yet. Check back soon.</p>';
     return;
   }
 
-  const latest = posts[0];
-  latestWrap.innerHTML = `
-    <article class="card" style="padding:20px; border:1px solid rgba(255,255,255,.12); border-radius:12px;">
-      <p style="opacity:.8; margin-bottom:8px;">Latest post</p>
-      <h2><a href="${latest.path || (latest.slug + '.html')}">${latest.title}</a></h2>
-      <p>${latest.excerpt}</p>
-      <small>${latest.publishedAt} • ${latest.readTime} • <a href="/blogs/category/${encodeURIComponent(latest.category || 'Guides')}">${latest.category || 'Guides'}</a></small>
-    </article>
-  `;
+  const categories = ['All', ...new Set(allPosts.map((p) => p.category || 'Guides'))];
+  let activeCategory = 'All';
+  let query = '';
 
-  allWrap.innerHTML = posts.map(post => `
-    <article class="card" style="padding:16px; border:1px solid rgba(255,255,255,.08); border-radius:10px;">
-      <h3><a href="${post.path || (post.slug + '.html')}">${post.title}</a></h3>
-      <p>${post.excerpt}</p>
-      <small>${post.publishedAt} • ${post.readTime} • <a href="/blogs/category/${encodeURIComponent(post.category || 'Guides')}">${post.category || 'Guides'}</a></small>
-    </article>
-  `).join('');
+  function renderChips() {
+    chipsWrap.innerHTML = categories.map((c) => `<button class="chip ${c===activeCategory?'active':''}" data-cat="${c}">${c}</button>`).join('');
+    chipsWrap.querySelectorAll('button').forEach((btn) => btn.addEventListener('click', () => {
+      activeCategory = btn.dataset.cat;
+      renderChips();
+      renderPosts();
+    }));
+  }
+
+  function getFiltered() {
+    return allPosts.filter((p) => {
+      const passCat = activeCategory === 'All' || (p.category || 'Guides') === activeCategory;
+      const txt = `${p.title} ${p.excerpt}`.toLowerCase();
+      const passQ = !query || txt.includes(query);
+      return passCat && passQ;
+    });
+  }
+
+  function renderPosts() {
+    const posts = getFiltered();
+    const latest = posts[0] || allPosts[0];
+    latestWrap.innerHTML = `
+      <article class="featured">
+        <img src="https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1400&q=80" alt="Latest AI blog" />
+        <div>
+          <p class="meta">Latest post</p>
+          <h2><a href="${latest.path || (latest.slug + '.html')}">${latest.title}</a></h2>
+          <p>${latest.excerpt}</p>
+          <p class="meta">${fmtDate(latest.publishedAt)} • ${latest.readTime} • <a href="/blogs/category/${encodeURIComponent(latest.category || 'Guides')}">${latest.category || 'Guides'}</a></p>
+        </div>
+      </article>`;
+
+    allWrap.innerHTML = posts.map((post) => `
+      <article class="blog-card">
+        <p class="meta">${fmtDate(post.publishedAt)}</p>
+        <h3><a href="${post.path || (post.slug + '.html')}">${post.title}</a></h3>
+        <p>${post.excerpt}</p>
+        <p class="meta">${post.readTime} • <a href="/blogs/category/${encodeURIComponent(post.category || 'Guides')}">${post.category || 'Guides'}</a></p>
+      </article>
+    `).join('');
+  }
+
+  searchInput.addEventListener('input', (e) => {
+    query = String(e.target.value || '').trim().toLowerCase();
+    renderPosts();
+  });
+
+  renderChips();
+  renderPosts();
 })();
