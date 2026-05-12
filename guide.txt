@@ -1,4 +1,4 @@
-# m2zpicks Final Setup Guide (Netlify + Appwrite + Cloudflare Worker KV)
+# M2ZPicks Final Setup Guide (Netlify + Appwrite + Cloudflare Worker KV)
 
 This guide is the exact checklist to make the project work end-to-end in production.
 
@@ -55,6 +55,52 @@ Collections/tables required:
 - `pick_ids` (integer[]) *(legacy fallback supported: `picks_ids`)*
 - `featured` (boolean)
 - optional: `reach_label`, `reach_k`, `niche_tags`, `tool_quote`, `platform_quote`
+
+#### Separating creators by platform tabs
+The creator tabs on `creators.html` filter by the creator row's `platform` field. If a creator only appears under **All**, it usually means the `platform` value is missing, misspelled, or does not exactly match a tab's `data-platform` value.
+
+Use these exact `platform` string values in the `creators` table/collection:
+
+| Tab button | Creator `platform` value |
+| --- | --- |
+| YouTube | `YouTube` |
+| Twitter / X | `Twitter / X` |
+| TikTok | `TikTok` |
+| Instagram | `Instagram` |
+
+Important rules:
+- Use the field name `platform` (not `platforn`). The site still supports `platforn` only as an old typo fallback, but new creator rows should use `platform`.
+- Platform matching is now case-insensitive, so `YouTube`, `Youtube`, `YOUTUBE`, and `youtube` all match the YouTube tab.
+- Multiple platforms are supported by comma-separating values, for example `Youtube, Instagram`. That creator will appear under both the YouTube and Instagram filters.
+- Spaces around comma-separated values are okay: `Youtube , Instagram` still works.
+- The wording still needs to normalize to the same platform name after casing/spaces are ignored. For example, `You Tube` (with an internal space) and `IG` will not match the current `YouTube` / `Instagram` tabs.
+- If you want another platform tab later (for example `LinkedIn`), add a new button in `creators.html` with `data-platform="LinkedIn"`, then use `platform = LinkedIn` in creator rows.
+- After changing creator fields in Appwrite, refresh the page and clear session storage if old creator data is cached.
+
+Example creator rows:
+```json
+{
+  "slug": "mkbhd",
+  "name": "Marques Brownlee",
+  "platform": "YouTube",
+  "avatar_url": "https://example.com/avatar.jpg",
+  "channel_url": "https://youtube.com/@mkbhd",
+  "pick_ids": [1, 25, 48],
+  "featured": true
+}
+```
+
+```json
+{
+  "slug": "ai-instagram-creator",
+  "name": "AI Instagram Creator",
+  "platform": "Youtube, Instagram",
+  "avatar_url": "https://example.com/avatar.jpg",
+  "channel_url": "https://instagram.com/example",
+  "pick_ids": [12, 44, 81],
+  "featured": false
+}
+```
 
 Permissions:
 - For now: public read access for `tools`, `ranks`, `creators`.
@@ -183,3 +229,22 @@ After deployment, do a hard refresh (Ctrl+F5) to clear cached scripts.
 - `APPWRITE_API_KEY`
 - `REFRESH_TOKEN`
 
+
+
+=== Admin Panel CORS + API Key Notes (2026-05-05) ===
+- What happened:
+  - Admin UI started calling Appwrite Tables/Rows directly from browser with x-appwrite-key.
+  - Browser preflight/CORS can block this, even when domains are added, because server API key flows are safer via backend.
+- What can happen:
+  - 'TypeError: Failed to fetch' in console.
+  - 401 scope errors if key misses rows.read/rows.write.
+- How to fight it:
+  1) Use cache bridge endpoint for read-only listing (`/tools`, `/categories`, `/stats`).
+  2) For create/update/delete, use a server-side proxy or Cloudflare worker endpoint that stores key in secrets (not browser).
+  3) Ensure key has rows.read + rows.write on current DB/table model.
+- What was fixed now:
+  - Added clear CORS/preflight error messaging in admin script.
+  - Added fallback: if direct Appwrite tools read fails, admin falls back to cache bridge `/tools` so listing still works.
+  - Updated wording for modern scopes (rows.read/rows.write).
+
+- Temporary change: admin panel now supports Appwrite Dev Key header (`x-appwrite-dev-key`) and includes a short-lived hardcoded default key for quick testing. Remove it before production.

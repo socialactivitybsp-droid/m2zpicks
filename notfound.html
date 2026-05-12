@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>404 — Page Not Found | m2zpicks</title>
+  <title>404 — Page Not Found | M2ZPicks</title>
   <meta name="description" content="The page you are looking for could not be found. Browse our AI tools directory instead." />
-  <meta property="og:title" content="Page Not Found | m2zpicks" />
+  <meta property="og:title" content="Page Not Found | M2ZPicks" />
   <meta property="og:description" content="The requested page could not be found." />
   <meta property="og:type" content="website" />
   <link rel="canonical" href="https://m2zpicks.netlify.app/notfound.html" />
@@ -88,8 +88,8 @@
     .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; font-family: var(--font-body); cursor: pointer; border: none; transition: all var(--transition); }
     .btn-nav { background: rgba(124,92,252,0.15); color: #a78bfa; border: 1px solid rgba(124,92,252,0.3); }
     .btn-nav:hover { background: rgba(124,92,252,0.25); border-color: rgba(124,92,252,0.5); }
-    .theme-toggle, .menu-toggle { width: 36px; height: 36px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 15px; display: grid; place-items: center; color: var(--text); transition: background var(--transition); }
-    .theme-toggle:hover, .menu-toggle:hover { background: rgba(255,255,255,0.1); }
+    .menu-toggle { width: 36px; height: 36px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 15px; display: grid; place-items: center; color: var(--text); transition: background var(--transition); }
+    .menu-toggle:hover { background: rgba(255,255,255,0.1); }
     .menu-toggle { display: none; }
 
     /* 404 Main */
@@ -254,11 +254,6 @@
     .footer-wrap nav a { font-size: 13px; color: var(--muted); transition: color var(--transition); }
     .footer-wrap nav a:hover { color: var(--text); }
 
-    body.light {
-      --bg: #f5f5fa; --bg-card: #ffffff;
-      --border: rgba(0,0,0,0.08); --border-hi: rgba(0,0,0,0.15);
-      --text: #0f0f18; --muted: #6b6b8a;
-    }
 
     @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -274,17 +269,20 @@
 
   <header class="site-header">
     <div class="container nav-wrap">
-      <a href="index.html" class="logo" aria-label="m2zpicks Home">
+      <a href="index.html" class="logo" aria-label="M2ZPicks Home">
         <span class="logo-mark">✦</span>
-        <span class="logo-text">m2zpicks</span>
+        <span class="logo-text">M2ZPicks</span>
       </a>
+
       <nav class="main-nav" id="mainNav" aria-label="Main Navigation">
         <a href="index.html">Home</a>
         <a href="list.html">Browse Tools</a>
+        <a href="creators.html">Creator Picks</a>
+        <a href="rankings.html">AI Rankings</a>
       </nav>
+
       <div class="nav-actions">
-        <a href="list.html" class="btn btn-nav">Start Exploring →</a>
-        <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">🌙</button>
+        <a href="list.html" class="btn btn-nav">Start Exploring</a>
         <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
       </div>
     </div>
@@ -341,7 +339,7 @@
 
   <footer class="site-footer">
     <div class="container footer-wrap">
-      <p>© <span id="year"></span> m2zpicks — Built for builders.</p>
+      <p>© <span id="year"></span> M2ZPicks — Built for builders.</p>
       <nav aria-label="Footer links">
         <a href="about.html">About</a>
         <a href="privacy.html">Privacy</a>
@@ -351,11 +349,6 @@
   </footer>
 
   <script>
-    const tt = document.getElementById('themeToggle');
-    if (tt) {
-      if (localStorage.getItem('theme') === 'light') { document.body.classList.add('light'); tt.textContent = '☀️'; }
-      tt.addEventListener('click', () => { document.body.classList.toggle('light'); const il = document.body.classList.contains('light'); localStorage.setItem('theme', il ? 'light' : 'dark'); tt.textContent = il ? '☀️' : '🌙'; });
-    }
     const mt = document.getElementById('menuToggle'), mn = document.getElementById('mainNav');
     if (mt && mn) mt.addEventListener('click', () => { mn.classList.toggle('open'); mt.setAttribute('aria-expanded', mn.classList.contains('open')); });
     const yr = document.getElementById('year'); if (yr) yr.textContent = new Date().getFullYear();
