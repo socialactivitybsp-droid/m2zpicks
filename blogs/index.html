@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>M2ZPicks Blogs</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="../index.html" class="logo"><span class="logo-mark">✦</span><span class="logo-text">M2ZPicks</span></a>
+      <nav class="main-nav" id="mainNav" aria-label="Main Navigation">
+        <a href="../index.html">Home</a>
+        <a href="../list.html">Browse Tools</a>
+        <a href="../creators.html">Creator Picks</a>
+        <a href="../rankings.html">AI Rankings</a>
+        <a href="index.html" class="active">Blogs</a>
+      </nav>
+      <div class="nav-actions">
+        <a href="../list.html" class="btn btn-nav">Start Exploring</a>
+        <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container section">
+    <div class="section-head">
+      <h1>AI Blogs</h1>
+    </div>
+
+    <section id="latestBlog" style="margin: 24px 0;"></section>
+
+    <section>
+      <div class="section-head"><h2>All Posts</h2></div>
+      <div class="grid" id="allBlogs"></div>
+    </section>
+  </main>
+
+  <script src="blog-data.js"></script>
+  <script src="landing.js"></script>
+</body>
+</html>
