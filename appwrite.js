@@ -5,7 +5,7 @@
   const ENDPOINT = 'https://sfo.cloud.appwrite.io/v1';
   const PROJECT_ID = 'm2zpicks';
   const DATABASE_ID = 'm2zpicks-db';
-  const COLLECTIONS = { tools: 'tools', ranks: 'ranks', creators: 'creators' };
+  const COLLECTIONS = { tools: 'tools', ranks: 'ranks', creators: 'creators', blogs: 'blogs' };
   const TTL_MS = 10 * 60 * 1000;
 
   const { Client, Databases, Query } = window.Appwrite;
@@ -115,6 +115,38 @@
 
   const fetchAllRanks = () => fetchAllPaginated(COLLECTIONS.ranks, 'mz_ranks_cache');
   const fetchAllCreators = () => fetchAllPaginated(COLLECTIONS.creators, 'mz_creators_cache');
+  const fetchAllBlogsDirect = () => fetchAllPaginated(COLLECTIONS.blogs, 'mz_blogs_cache_direct');
+
+  const normalizeBlog = (blog) => ({
+    ...blog,
+    slug: String(blog?.slug || '').trim(),
+    title: String(blog?.title || '').trim(),
+    excerpt: String(blog?.excerpt || '').trim(),
+    readTime: String(blog?.readTime || '').trim(),
+    path: String(blog?.path || '').trim(),
+    category: String(blog?.category || 'Guides').trim(),
+    publishedAt: blog?.publishedAt || blog?.$createdAt || null
+  });
+
+  const fetchAllBlogs = async () => {
+    const payload = await fetchBridgeWithFallback('/blogs', 'mz_blogs_cache_bridge', async () => ({ blogs: await fetchAllBlogsDirect() }));
+    return (payload.blogs || []).map(normalizeBlog).sort((a, b) => new Date(b.publishedAt || 0) - new Date(a.publishedAt || 0));
+  };
+
+  const fetchLatestBlogs = async () => {
+    const payload = await fetchBridgeWithFallback('/blogs/latest', 'mz_latest_blogs_cache_bridge', async () => ({ latest: await fetchAllBlogs() }));
+    return (payload.latest || []).map(normalizeBlog).sort((a, b) => new Date(b.publishedAt || 0) - new Date(a.publishedAt || 0));
+  };
+
+  const fetchBlogCategories = async () => {
+    const payload = await fetchBridgeWithFallback('/blogs/categories', 'mz_blog_categories_cache_bridge', async () => ({ categories: buildCategories(await fetchAllBlogs()) }));
+    return payload.categories || [];
+  };
+
+  const fetchBlogsByCategory = async (category, limit = 6) => {
+    const blogs = await fetchAllBlogs();
+    return blogs.filter((b) => String(b.category) === String(category).trim()).slice(0, limit);
+  };
 
   function buildCategories(tools) {
     const map = new Map();
@@ -206,6 +238,10 @@
     fetchFeaturedTools,
     fetchHomepageStats,
     fetchAllCreators,
-    getCreatorPickLookup
+    getCreatorPickLookup,
+    fetchAllBlogs,
+    fetchLatestBlogs,
+    fetchBlogCategories,
+    fetchBlogsByCategory
   };
 })();

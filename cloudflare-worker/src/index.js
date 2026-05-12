@@ -3,6 +3,9 @@ const CACHE_KEYS = {
   categories: 'cache:categories',
   stats: 'cache:stats',
   latest: 'cache:latest',
+  blogs: 'cache:blogs',
+  blogCategories: 'cache:blog-categories',
+  latestBlogs: 'cache:latest-blogs',
   meta: 'cache:meta'
 };
 
@@ -37,6 +40,9 @@ export default {
     if (url.pathname === '/categories') return serveCached(env, CACHE_KEYS.categories);
     if (url.pathname === '/stats') return serveCached(env, CACHE_KEYS.stats);
     if (url.pathname === '/latest') return serveCached(env, CACHE_KEYS.latest);
+    if (url.pathname === '/blogs') return serveCached(env, CACHE_KEYS.blogs);
+    if (url.pathname === '/blogs/categories') return serveCached(env, CACHE_KEYS.blogCategories);
+    if (url.pathname === '/blogs/latest') return serveCached(env, CACHE_KEYS.latestBlogs);
 
     if (url.pathname === '/health') {
       try {
@@ -99,6 +105,8 @@ async function serveCached(env, key) {
 async function refreshCache(env) {
   const tools = await fetchAllToolsFromAppwrite(env);
   const categories = buildCategories(tools);
+  const blogs = await fetchAllBlogsFromAppwrite(env);
+  const blogCategories = buildCategories(blogs, 'Guides');
 
   const stats = {
     totalTools: tools.length,
@@ -111,6 +119,9 @@ async function refreshCache(env) {
       (a, b) =>
         new Date(b.$createdAt || 0) - new Date(a.$createdAt || 0)
     )
+    .slice(0, 50);
+  const latestBlogs = [...blogs]
+    .sort((a, b) => new Date(b.publishedAt || b.$createdAt || 0) - new Date(a.publishedAt || a.$createdAt || 0))
     .slice(0, 50);
 
   const expirationTtl = Number(env.CACHE_TTL_SECONDS || 259200);
@@ -137,6 +148,21 @@ async function refreshCache(env) {
     env.TOOLS_KV.put(
       CACHE_KEYS.latest,
       JSON.stringify({ latest }),
+      { expirationTtl }
+    ),
+    env.TOOLS_KV.put(
+      CACHE_KEYS.blogs,
+      JSON.stringify({ blogs }),
+      { expirationTtl }
+    ),
+    env.TOOLS_KV.put(
+      CACHE_KEYS.blogCategories,
+      JSON.stringify({ categories: blogCategories }),
+      { expirationTtl }
+    ),
+    env.TOOLS_KV.put(
+      CACHE_KEYS.latestBlogs,
+      JSON.stringify({ latest: latestBlogs }),
       { expirationTtl }
     ),
 
@@ -239,6 +265,46 @@ function buildCategories(tools) {
       count
     }))
     .sort((a, b) => b.count - a.count);
+}
+
+async function fetchAllBlogsFromAppwrite(env) {
+  const collectionId = env.APPWRITE_BLOGS_COLLECTION_ID || 'blogs';
+  const blogs = await fetchAllDocumentsFromAppwrite(env, collectionId, 'publishedAt');
+  return blogs.map((b) => ({
+    ...b,
+    category: String(b.category || 'Guides').trim(),
+    path: String(b.path || '').trim()
+  }));
+}
+
+async function fetchAllDocumentsFromAppwrite(env, collectionId, orderField = 'id') {
+  const endpoint = env.APPWRITE_ENDPOINT;
+  const db = env.APPWRITE_DATABASE_ID;
+  const headers = {
+    'x-appwrite-project': env.APPWRITE_PROJECT_ID,
+    'x-appwrite-key': env.APPWRITE_API_KEY,
+    'x-appwrite-response-format': '1.0.0',
+    'content-type': 'application/json'
+  };
+  const docsOut = [];
+  let offset = 0;
+  let total = Infinity;
+  while (offset < total) {
+    const params = new URLSearchParams();
+    params.append('queries[]', 'limit(100)');
+    params.append('queries[]', `offset(${offset})`);
+    params.append('queries[]', `orderDesc("${orderField}")`);
+    const url = `${endpoint}/databases/${db}/collections/${collectionId}/documents?${params.toString()}`;
+    const res = await fetch(url, { headers });
+    if (!res.ok) throw new Error(`Appwrite fetch failed (${collectionId}): ${res.status} | ${await res.text()}`);
+    const payload = await res.json();
+    const docs = payload.documents || [];
+    total = Number(payload.total || 0);
+    docsOut.push(...docs);
+    if (!docs.length) break;
+    offset += docs.length;
+  }
+  return docsOut;
 }
 
 function withCors(response) {
