@@ -8,6 +8,10 @@ const CACHE_KEYS = {
 
 export default {
   async fetch(request, env) {
+    if (request.method === 'OPTIONS') {
+      return withCors(new Response(null, { status: 204 }));
+    }
+
     const url = new URL(request.url);
 
     if (url.pathname === '/refresh' && request.method === 'POST') {
@@ -46,12 +50,12 @@ export default {
           });
         }
 
-        return new Response(value, {
+        return withCors(new Response(value, {
           headers: {
             'content-type': 'application/json; charset=utf-8',
             'cache-control': 'no-store'
           }
-        });
+        }));
       } catch (err) {
         return json({
           ok: false,
@@ -78,12 +82,12 @@ async function serveCached(env, key) {
       }, 503);
     }
 
-    return new Response(value, {
+    return withCors(new Response(value, {
       headers: {
         'content-type': 'application/json; charset=utf-8',
         'cache-control': 'public, max-age=300, s-maxage=86400, stale-while-revalidate=86400'
       }
-    });
+    }));
   } catch (err) {
     return json({
       ok: false,
@@ -161,6 +165,7 @@ async function fetchAllToolsFromAppwrite(env) {
   const headers = {
     'x-appwrite-project': env.APPWRITE_PROJECT_ID,
     'x-appwrite-key': env.APPWRITE_API_KEY,
+    'x-appwrite-response-format': '1.0.0',
     'content-type': 'application/json'
   };
 
@@ -169,45 +174,49 @@ async function fetchAllToolsFromAppwrite(env) {
   let total = Infinity;
 
   while (offset < total) {
-  const url = `${endpoint}/databases/${db}/collections/${col}/documents?limit=100&offset=${offset}`;
+    const params = new URLSearchParams();
+    params.append('queries[]', 'limit(100)');
+    params.append('queries[]', `offset(${offset})`);
+    params.append('queries[]', 'orderAsc("id")');
 
-  const res = await fetch(url, { headers });
+    const url = `${endpoint}/databases/${db}/collections/${col}/documents?${params.toString()}`;
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(
-      `Appwrite fetch failed: ${res.status} | ${text}`
-    );
+    const res = await fetch(url, { headers });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Appwrite fetch failed: ${res.status} | ${text}`);
+    }
+
+    const payload = await res.json();
+
+    if (!payload || !Array.isArray(payload.documents)) {
+      throw new Error(`Unexpected Appwrite payload: ${JSON.stringify(payload)}`);
+    }
+
+    const docs = payload.documents || [];
+    total = Number(payload.total || 0);
+
+    tools.push(...docs);
+
+    if (!docs.length) break;
+
+    offset += docs.length;
   }
 
-  let payload;
+  const seen = new Set();
+  const deduped = [];
 
-  try {
-    payload = await res.json();
-  } catch (_err) {
-    throw new Error('Appwrite returned invalid JSON');
+  for (const t of tools) {
+    const key = t.$id || `id:${t.id}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    deduped.push(t);
   }
 
-  if (!payload || !Array.isArray(payload.documents)) {
-    throw new Error(
-      `Unexpected Appwrite payload: ${JSON.stringify(payload)}`
-    );
-  }
+  deduped.sort((a, b) => Number(a.id || 0) - Number(b.id || 0));
 
-  total = Number(payload.total || 0);
-
-  const docs = payload.documents || [];
-
-  tools.push(...docs);
-
-  if (!docs.length) {
-    break;
-  }
-
-  offset += docs.length;
-}
-
-  return tools;
+  return deduped;
 }
 
 function buildCategories(tools) {
@@ -232,12 +241,21 @@ function buildCategories(tools) {
     .sort((a, b) => b.count - a.count);
 }
 
+function withCors(response) {
+  const headers = new Headers(response.headers);
+  headers.set('access-control-allow-origin', '*');
+  headers.set('access-control-allow-methods', 'GET,POST,OPTIONS');
+  headers.set('access-control-allow-headers', 'Content-Type,x-refresh-token');
+  headers.set('vary', 'Origin');
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+}
+
 function json(data, status = 200) {
-  return new Response(JSON.stringify(data, null, 2), {
+  return withCors(new Response(JSON.stringify(data, null, 2), {
     status,
     headers: {
       'content-type': 'application/json; charset=utf-8',
       'cache-control': 'no-store'
     }
-  });
+  }));
 }

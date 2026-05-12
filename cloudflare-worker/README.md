@@ -1,4 +1,4 @@
-# m2zpicks Cloudflare Worker + KV Cache Bridge
+# M2ZPicks Cloudflare Worker + KV Cache Bridge
 
 ## What this does
 Appwrite (source of truth) -> Cloudflare Scheduled Worker -> KV cache -> Netlify frontend reads Worker endpoints.
