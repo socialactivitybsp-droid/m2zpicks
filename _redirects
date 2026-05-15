@@ -10,5 +10,8 @@ http://m2zpicks.netlify.app/* https://m2zpicks.netlify.app/:splat 301!
 # Redirect www HTTP to HTTPS non-www
 http://www.m2zpicks.netlify.app/* https://m2zpicks.netlify.app/:splat 301!
 
+# Blogs category pretty URLs
+/blogs/category/* /blogs/category.html 200
+
 # Serve custom 404 page for unknown paths
 /* /404.html 404

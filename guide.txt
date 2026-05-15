@@ -248,3 +248,61 @@ After deployment, do a hard refresh (Ctrl+F5) to clear cached scripts.
   - Updated wording for modern scopes (rows.read/rows.write).
 
 - Temporary change: admin panel now supports Appwrite Dev Key header (`x-appwrite-dev-key`) and includes a short-lived hardcoded default key for quick testing. Remove it before production.
+
+---
+## 9) Blog publishing workflow (after EVERY blog publish)
+
+### 9.1 Required Appwrite `blogs` fields
+Each row in `blogs` collection must include:
+- `slug`
+- `title`
+- `excerpt`
+- `readTime`
+- `publishedAt` (datetime)
+- `path` (full URL, e.g. `https://m2zpicks.netlify.app/blogs/my-slug.html`)
+- `category`
+- `hero` (hero image URL for blog landing cards/featured block)
+
+Allowed categories currently used on site:
+- `Reviews`
+- `Comparisons`
+- `Rankings`
+- `Guides`
+- `News & Updates`
+- `Alternatives`
+
+### 9.2 After writing a new blog page
+1. Create `blogs/<slug>.html` page.
+2. Add one row in Appwrite `blogs` collection with matching `slug` + `path`.
+3. Deploy to Netlify.
+4. Trigger worker refresh (do not wait for daily cron):
+```bash
+curl -X POST "https://<your-worker>.workers.dev/refresh" \
+  -H "x-refresh-token: <your_refresh_token>"
+```
+
+### 9.3 Verify data endpoints after refresh
+Check these endpoints:
+- `GET /blogs` should include your new row and all categories.
+- `GET /blogs/latest` should place newest `publishedAt` first.
+- `GET /blogs/categories` should show correct counts per category.
+
+### 9.4 Verify frontend behavior
+- Blogs landing page (`/blogs/index.html`) shows newest post in "Latest post".
+- Category pages work:
+  - `/blogs/category/Reviews`
+  - `/blogs/category/Comparisons`
+  - `/blogs/category/Rankings`
+  - `/blogs/category/Guides`
+  - `/blogs/category/News%20%26%20Updates`
+  - `/blogs/category/Alternatives`
+- Open the new blog page and confirm:
+  - header/footer render
+  - author section renders
+  - related posts block loads
+
+### 9.5 Local seed/test data
+This repo now includes 12 real starter blog records in:
+- `blogs/seed-blogs.json`
+
+Use it to bulk import into Appwrite `blogs` for verification.

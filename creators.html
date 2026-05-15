@@ -19,6 +19,9 @@
 .menu-toggle{width:32px;height:32px;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:8px;display:none;place-items:center;font-size:14px;color:var(--tx)}@media (max-width:820px){.creator-block,.creator-block.flip{grid-template-columns:1fr;min-height:unset}.creator-img-col{height:260px;order:0!important}.main-nav{display:none}.menu-toggle{display:grid}.main-nav.open{display:flex;flex-direction:column;position:absolute;top:58px;left:0;right:0;background:rgba(7,7,12,.97);border-bottom:1px solid var(--bd);padding:10px;gap:2px;z-index:300}}
 .pick-tool-logo,.rec-tool-logo{width:28px;height:28px;border-radius:8px;object-fit:cover;flex:0 0 28px;background:var(--bg-card-hi);border:1px solid var(--bd-hi);box-shadow:0 4px 12px rgba(0,0,0,.18)}.rec-tool-box .rec-tool-name{font-weight:800}.pick-row .pick-rank{color:var(--mu);font-family:var(--mono);font-size:11px;min-width:22px}.pick-row .pick-tool-name{font-weight:650}
 
+
+.featured-badge{padding:6px 10px;border-radius:999px;background:linear-gradient(90deg,#7c3aed,#06b6d4);color:#fff;font-size:10px;font-weight:800;letter-spacing:.4px;animation:wave 1.6s ease-in-out infinite}.reach-chip{font-size:11px;color:var(--mint);font-weight:700}.pager-btn{padding:6px 10px;border:1px solid var(--bd);border-radius:8px;color:var(--tx2)}.pager-btn.active{background:var(--vis);color:var(--vi2);border-color:var(--vib)}@keyframes wave{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+.creator-img-col{position:relative}.creator-img-overlay{position:absolute;inset:0;display:flex;gap:8px;align-items:center;justify-content:center;background:rgba(0,0,0,.45);opacity:0;transition:opacity .2s ease}.creator-img-col:hover img{opacity:.28}.creator-img-col:hover .creator-img-overlay{opacity:1}.img-social{padding:7px 10px;border-radius:10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);font-size:12px}
 </style>
 </head>
 <body>
@@ -35,6 +38,7 @@
         <a href="list.html">Browse Tools</a>
         <a href="creators.html" class="active">Creator Picks</a>
         <a href="rankings.html">AI Rankings</a>
+        <a href="blogs/index.html">Blogs</a>
       </nav>
 
       <div class="nav-actions">
@@ -43,59 +47,39 @@
       </div>
     </div>
   </header>
-<main><section class="creator-hero"><div class="container creator-hero-inner"><div class="live-badge"><span class="live-dot"></span>HAND-VERIFIED PICKS</div><h1><span class="gradient-text">What Creators</span><br>Actually Use 🎬</h1><p>Not sponsored. Not guesswork. Real AI tools picked by real creators who use them every single day.</p><div class="hero-stats"><div><div class="hstat-num" id="creatorsCount">0</div><div class="hstat-lbl">Creators</div></div><div><div class="hstat-num" id="picksCount">0</div><div class="hstat-lbl">Tool Picks</div></div><div><div class="hstat-num" id="reachCount">—</div><div class="hstat-lbl">Combined Reach</div></div></div></div></section><div class="container"><div class="platform-tabs" id="platformTabs"><button class="ptab active" data-platform="all">🌐 All</button><button class="ptab" data-platform="YouTube">YouTube</button><button class="ptab" data-platform="Twitter / X">Twitter / X</button><button class="ptab" data-platform="TikTok">TikTok</button><button class="ptab" data-platform="Instagram">Instagram</button></div><div id="creatorLoading" class="creator-loading"><div class="creator-skeleton"></div><div class="creator-skeleton"></div></div><div id="creatorBlocks"></div></div></main>
+<main><section class="creator-hero"><div class="container creator-hero-inner"><div class="live-badge"><span class="live-dot"></span>HAND-VERIFIED PICKS</div><h1><span class="gradient-text">What Creators</span><br>Actually Use 🎬</h1><p>Not sponsored. Not guesswork. Real AI tools picked by real creators who use them every single day.</p><div class="hero-stats"><div><div class="hstat-num" id="creatorsCount">0</div><div class="hstat-lbl">Creators</div></div><div><div class="hstat-num" id="picksCount">0</div><div class="hstat-lbl">Tool Picks</div></div><div><div class="hstat-num" id="reachCount">—</div><div class="hstat-lbl">Combined Reach</div></div></div></div></section><div class="container"><div class="platform-tabs" id="platformTabs"><button class="ptab active" data-platform="all">🌐 All</button><button class="ptab" data-platform="YouTube">YouTube</button><button class="ptab" data-platform="Twitter / X">Twitter / X</button><button class="ptab" data-platform="TikTok">TikTok</button><button class="ptab" data-platform="Instagram">Instagram</button><button class="ptab" data-platform="LinkedIn">LinkedIn</button></div><div id="creatorLoading" class="creator-loading"><div class="creator-skeleton"></div><div class="creator-skeleton"></div></div><div id="creatorBlocks"></div><div id="creatorPager" style="display:flex;gap:8px;justify-content:center;align-items:center;margin:18px 0;"></div></div></main>
 <footer class="site-footer"><div class="container footer-wrap"><p>© <span id="year"></span> M2ZPicks — Creator picks updated regularly</p><nav><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="contact.html">Contact</a></nav></div></footer>
 <script src="https://cdn.jsdelivr.net/npm/appwrite@16/dist/iife/sdk.js"></script><script src="appwrite.js"></script><script src="gift.js?v=20260314"></script>
 <script>
 (async()=>{
 try{
-  const withTimeout = (promise, ms = 12000) => Promise.race([promise, new Promise((_, reject) => setTimeout(() => reject(new Error('Creators request timeout')), ms))]);
-  const creatorDocs=await withTimeout(window.AppwriteLayer.fetchAllCreators(), 12000);
-  const allPickIds=[...new Set(creatorDocs.flatMap(c=>((c.pick_ids||c.picks_ids)||[]).map(Number)).filter(Boolean))];
-  const tools=allPickIds.length ? await withTimeout(window.AppwriteLayer.fetchToolsByIds(allPickIds), 12000) : [];
+  const PER_PAGE=4;
+  const tick='https://png.pngtree.com/png-vector/20230408/ourmid/pngtree-instagram-bule-tick-insta-blue-star-vector-png-image_6695210.png';
+  const creatorDocs=await window.AppwriteLayer.fetchAllCreators();
+  const parsePickIds=(v)=>Array.isArray(v)?v:(typeof v==='string'?JSON.parse(v):[]);
+  const parseTags=(v)=>Array.isArray(v)?v:(typeof v==='string'?JSON.parse(v):[]);
+  const pickIds=[...new Set(creatorDocs.flatMap(c=>parsePickIds(c.pick_ids||c.picks_ids)).map(Number).filter(Boolean))];
+  const tools=pickIds.length?await window.AppwriteLayer.fetchToolsByIds(pickIds):[];
   const byId=new Map(tools.map(t=>[Number(t.id),t]));
-  const normalizePlatform=(value='')=>String(value||'').trim().toLowerCase().replace(/\s+/g,' ');
-  const platformMatches=(creatorPlatform, selectedPlatform)=>{
-    if(selectedPlatform==='all') return true;
-    const selected=normalizePlatform(selectedPlatform);
-    return String(creatorPlatform||'').split(',').map(normalizePlatform).includes(selected);
-  };
-  const displayPlatform=(value='Unknown')=>String(value||'Unknown').split(',').map(p=>p.trim()).filter(Boolean).join(' / ')||'Unknown';
-  const creators=creatorDocs.map(c=>({
-    ...c,
-    platform:c.platform||c.platforn||'Unknown',
-    platform_label:displayPlatform(c.platform||c.platforn||'Unknown'),
-    pick_ids:Array.isArray(c.pick_ids)?c.pick_ids:(Array.isArray(c.picks_ids)?c.picks_ids:[])
-  }));
-  const root=document.getElementById('creatorBlocks');
-  const loading=document.getElementById('creatorLoading');
-  document.getElementById('year').textContent=new Date().getFullYear();
-  document.getElementById('creatorsCount').textContent=creators.length;
-  document.getElementById('picksCount').textContent=creators.reduce((a,c)=>a+(c.pick_ids||[]).length,0);
-  const reach=creators.reduce((a,c)=>a+(parseInt(c.reach_k||0,10)),0);
+  const norm=(s='')=>String(s).toLowerCase().replace(/\s+/g,' ').replace(/\//g,' ').trim();
+  const canon=(p)=>{const n=norm(p);if(n.includes('twitter')||n==='x') return 'twitter / x'; if(n.includes('youtube')) return 'youtube'; if(n.includes('instagram')) return 'instagram'; if(n.includes('linkedin')) return 'linkedin'; if(n.includes('tiktok')) return 'tiktok'; return n;};
+  const creators=creatorDocs.map(c=>({...c,pick_ids:parsePickIds(c.pick_ids||c.picks_ids),niche_tags:parseTags(c.niche_tags),platformRaw:c.platform||c.platforn||'Unknown',platforms:String(c.platform||c.platforn||'').split(',').map(x=>canon(x)).filter(Boolean)}));
+  const reach=creators.reduce((a,c)=>a+(Number(String(c.reach_k||0).replace(/[^\d.]/g,''))||0),0);
   document.getElementById('reachCount').textContent=reach?`${(reach/1000).toFixed(1)}M+`:'—';
-
-  function getToolLogo(tool, size=64){
-    try{return `https://www.google.com/s2/favicons?domain=${new URL(tool.link).hostname.replace(/^www\./,'')}&sz=${size}`;}catch{return 'fallback.png';}
+  document.getElementById('creatorsCount').textContent=creators.length;document.getElementById('picksCount').textContent=creators.reduce((a,c)=>a+c.pick_ids.length,0);document.getElementById('year').textContent=new Date().getFullYear();
+  const root=document.getElementById('creatorBlocks'),pager=document.getElementById('creatorPager');
+  let active='all',page=1;
+  const getList=()=>creators.filter(c=>active==='all'||c.platforms.includes(canon(active)));
+  const getToolLogo=(tool,size=64)=>{try{return `https://www.google.com/s2/favicons?domain=${new URL(tool.link).hostname.replace(/^www\./,'')}&sz=${size}`;}catch{return 'fallback.png';}};
+  function render(){const list=getList();const totalPages=Math.max(1,Math.ceil(list.length/PER_PAGE));if(page>totalPages)page=totalPages;const slice=list.slice((page-1)*PER_PAGE,page*PER_PAGE);
+    root.innerHTML=slice.map((c,i)=>{const picks=c.pick_ids.map(id=>byId.get(Number(id))).filter(Boolean);const top=picks[0],rest=picks.slice(1,4);return `<article class="creator-block ${(i%2)?'flip':''}"><div><div class="creator-top-section"><div class="name-badge-row"><div><div class="creator-fullname">${c.name} <img src="${tick}" alt="verified" style="width:18px;height:18px;display:inline-block;vertical-align:middle;"></div><div class="niche-row">${(c.niche_tags||[]).map(t=>`<span class='niche-tag'>${t}</span>`).join('')}</div></div><div>${c.featured?'<span class="featured-badge">FEATURED ✦</span>':''}<div class="reach-chip">Reach: ${(Number(c.reach_k)||0).toLocaleString()}K</div></div></div></div>${top?`<div class='rec-tool-box'><img class='rec-tool-logo' src='${getToolLogo(top)}' alt='${top.title} logo' onerror="this.src='fallback.png'"><div class='rec-tool-name'>${top.title}</div></div>`:''}<div class='quotes-area'><div class='quote-block'>${c.tool_quote||''}</div><div class='quote-block'>${c.platform_quote||''}</div></div><div class='picks-head'><span>${(c.name||'Creator').split(' ')[0]}'s Other Picks</span><span>${Math.max(c.pick_ids.length-1,0)} more</span></div><div class='pick-rows'>${rest.map((t,ix)=>`<a class='pick-row' href='detailed.html?id=${t.id}'><span class='pick-rank'>#${ix+2}</span><img class='pick-tool-logo' src='${getToolLogo(t)}' alt='${t.title} logo' onerror="this.src='fallback.png'"><span class='pick-tool-name'>${t.title}</span></a>`).join('')}</div><div class='card-foot'><a class='social-btn' href='${c.channel_url||'#'}' target='_blank'>${c.platformRaw||'Channel'}</a></div></div><div class="creator-img-col"><img src="${c.avatar_url||'fallback.png'}" alt="${c.name}"><div class="creator-img-overlay">${c.youtube?`<a class="img-social" href="${c.youtube}" target="_blank">YouTube</a>`:''}${c.instagram?`<a class="img-social" href="${c.instagram}" target="_blank">Instagram</a>`:''}${c.facebook?`<a class="img-social" href="${c.facebook}" target="_blank">Facebook</a>`:''}</div></div></article>`;}).join('')||'<p>No creators yet.</p>';
+    pager.innerHTML=`<button class='pager-btn' ${page===1?'disabled':''} data-p='${page-1}'>Prev</button>`+Array.from({length:totalPages},(_,i)=>`<button class='pager-btn ${page===i+1?'active':''}' data-p='${i+1}'>${i+1}</button>`).join('')+`<button class='pager-btn' ${page===totalPages?'disabled':''} data-p='${page+1}'>Next</button><input id='jumpPage' type='number' min='1' max='${totalPages}' value='${page}' style='width:72px;background:#0d0d16;border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:8px;padding:6px'><button class='pager-btn' id='jumpBtn'>Jump</button>`;
+    pager.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{page=Math.max(1,Math.min(totalPages,Number(b.dataset.p)));render();});
+    pager.querySelector('#jumpBtn').onclick=()=>{page=Math.max(1,Math.min(totalPages,Number(pager.querySelector('#jumpPage').value||1)));render();};
   }
-
-  function render(platform='all'){
-    const list=creators.filter(c=>platformMatches(c.platform, platform));
-    root.innerHTML=list.map((c,i)=>{
-      const picks=(c.pick_ids||[]).map(id=>byId.get(Number(id))).filter(Boolean);
-      const top=picks[0];
-      const rest=picks.slice(1,4);
-      return `<article class="creator-block ${i%2?'flip':''}"><div><div class="creator-top-section"><div class="name-badge-row"><div><div class="creator-fullname">${c.name} <span class="vtick">✓</span></div><div class="niche-row">${(c.niche_tags||[]).map(t=>`<span class='niche-tag'>${t}</span>`).join('')}</div></div><div>${c.reach_label||''}</div></div></div>${top?`<div class='rec-tool-box'><img class='rec-tool-logo' src='${getToolLogo(top)}' alt='${top.title} logo' onerror="this.src='fallback.png'"><div class='rec-tool-name'>${top.title}</div></div>`:''}<div class='quotes-area'><div class='quote-block'>${c.tool_quote||''}</div><div class='quote-block'>${c.platform_quote||''}</div></div><div class='picks-head'><span>${(c.name||'Creator').split(' ')[0]}'s Other Picks</span><span>${Math.max((c.pick_ids||[]).length-1,0)} more</span></div><div class='pick-rows'>${rest.map((t,ix)=>`<a class='pick-row' href='detailed.html?id=${t.id}'><span class='pick-rank'>#${ix+2}</span><img class='pick-tool-logo' src='${getToolLogo(t)}' alt='${t.title} logo' onerror="this.src='fallback.png'"><span class='pick-tool-name'>${t.title}</span></a>`).join('')}</div><div class='card-foot'><a class='social-btn' href='${c.channel_url||'#'}' target='_blank'>${c.platform_label||c.platform||'Channel'}</a></div></div><div class="creator-img-col"><img src="${c.avatar_url||'fallback.png'}" alt="${c.name}"></div></article>`;
-    }).join('')||'<p>No creators yet.</p>';
-  }
-
-  render();
-  if(loading) loading.style.display="none";
-  const menuToggle=document.getElementById('menuToggle'), mainNav=document.getElementById('mainNav');
-  if(menuToggle&&mainNav) menuToggle.addEventListener('click',()=>{mainNav.classList.toggle('open');menuToggle.setAttribute('aria-expanded',mainNav.classList.contains('open'));});
-  document.querySelectorAll('.ptab').forEach(t=>t.addEventListener('click',()=>{document.querySelectorAll('.ptab').forEach(x=>x.classList.remove('active'));t.classList.add('active');render(t.dataset.platform);}));
-  window.addEventListener('scroll',()=>{const pct=window.scrollY/(document.body.scrollHeight-window.innerHeight)*100;document.getElementById('scrollProgress').style.width=Math.min(pct,100)+'%';});
-}catch(err){console.error(err);const loading=document.getElementById('creatorLoading');if(loading) loading.style.display='none';const root=document.getElementById('creatorBlocks');if(root) root.innerHTML='<div class="empty-state"><h2>Unable to load creators</h2><p>Please refresh and try again.</p></div>';}
+  document.querySelectorAll('.ptab').forEach(t=>t.onclick=()=>{document.querySelectorAll('.ptab').forEach(x=>x.classList.remove('active'));t.classList.add('active');active=t.dataset.platform;page=1;render();});
+  document.getElementById('creatorLoading').style.display='none';render();
+}catch(err){console.error(err);document.getElementById('creatorLoading').style.display='none';document.getElementById('creatorBlocks').innerHTML='<div class="empty-state"><h2>Unable to load creators</h2></div>';}
 })();
 </script>
 

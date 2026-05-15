@@ -76,14 +76,14 @@
             ${medalOrNum(pos)}
             ${changeBadge(m.change)}
           </div>
-          <div class="model-info">
+          <a class="model-info model-link" href="detailed.html?id=${encodeURIComponent(m.id)}" aria-label="View ${m.title} details">
             <div class="model-avatar">${logo ? `<img src="${logo}" alt="${m.title} logo" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display='none';this.parentNode.textContent='🛠️';">` : '🛠️'}</div>
             <div class="model-text">
               <div class="model-name">${m.title}</div>
               <div class="model-maker">${m.category}</div>
               <div class="model-tags">${tagHtml(m.tags)}</div>${m.creatorPicks?.length ? `<div class="creator-pick-badge">⭐ Picked by <strong>${m.creatorPicks[0].name}</strong>${m.creatorPicks.length > 1 ? ` +${m.creatorPicks.length - 1} more` : ''}</div>` : ''}
             </div>
-          </div>
+          </a>
           <div class="overall-cell">
             <div class="overall-ring" style="--pct:${pct}"><span>${m.overall}</span></div>
           </div>
@@ -187,8 +187,7 @@
       change: parseInt(item.change, 10) || 0,
       creatorPicks: creators.get(Number(item.id)) || []
     }));
-    const latest = state.data.reduce((m, it) => Math.max(m, new Date(it.$updatedAt).getTime()), 0);
-    setUpdateBadge(latest ? new Date(latest).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '');
+    setUpdateBadge();
   }
 
   function bindEvents() {
