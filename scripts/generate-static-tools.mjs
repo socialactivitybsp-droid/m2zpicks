@@ -13,6 +13,20 @@ const score = (v)=>Math.max(0,Math.min(100,parseInt(v,10)||0));
 const contextFmt=(v)=>{const n=parseInt(v,10)||0;return n?`${n}K`:'0K';};
 
 async function tryJson(url){try{const r=await fetch(url,{cache:'no-store'});if(r.ok)return await r.json();}catch{}return null;}
+async function fetchAppwriteCollection(collectionId){
+  const endpoint='https://sfo.cloud.appwrite.io/v1';
+  const db='m2zpicks-db';
+  const project='m2zpicks';
+  const out=[]; let offset=0; let total=Infinity;
+  while(offset<total){
+    const q=new URLSearchParams(); q.append('queries[]','limit(100)'); q.append('queries[]',`offset(${offset})`);
+    const r=await fetch(`${endpoint}/databases/${db}/collections/${collectionId}/documents?${q.toString()}`,{headers:{'x-appwrite-project':project}});
+    if(!r.ok) break;
+    const j=await r.json(); const docs=j.documents||[];
+    total=Number(j.total||0); out.push(...docs); if(!docs.length) break; offset+=docs.length;
+  }
+  return out;
+}
 
 async function loadAll() {
   const [toolsPayload, ranksPayload] = await Promise.all([
@@ -23,30 +37,11 @@ async function loadAll() {
   const tools = Array.isArray(toolsPayload?.tools) ? toolsPayload.tools : [];
   let ranks = Array.isArray(ranksPayload?.ranks) ? ranksPayload.ranks : [];
 
-  // fallback for ranks from Appwrite public read
-  if (!ranks.length) {
-    try {
-      const endpoint = 'https://sfo.cloud.appwrite.io/v1';
-      const db = 'm2zpicks-db';
-      const project = 'm2zpicks';
-      const col = 'ranks';
-      const q = new URLSearchParams(); q.append('queries[]','limit(500)');
-      const r = await fetch(`${endpoint}/databases/${db}/collections/${col}/documents?${q.toString()}`,{headers:{'x-appwrite-project':project}});
-      if (r.ok) ranks = (await r.json()).documents || [];
-    } catch {}
-  }
+  if (!ranks.length) { try { ranks = await fetchAppwriteCollection('ranks'); } catch {} }
 
   // creators from AppwriteLayer-like public endpoint
   let creators = [];
-  try {
-    const endpoint = 'https://sfo.cloud.appwrite.io/v1';
-    const db = 'm2zpicks-db';
-    const project = 'm2zpicks';
-    const col = 'creators';
-    const q = new URLSearchParams(); q.append('queries[]','limit(500)');
-    const r = await fetch(`${endpoint}/databases/${db}/collections/${col}/documents?${q.toString()}`,{headers:{'x-appwrite-project':project}});
-    if (r.ok) creators = (await r.json()).documents || [];
-  } catch {}
+  try { creators = await fetchAppwriteCollection('creators'); } catch {}
 
   if (!tools.length) throw new Error('No tools data available from cache bridge');
   return { tools, ranks, creators };
@@ -55,7 +50,7 @@ async function loadAll() {
 function parsePickIds(v){if(Array.isArray(v)) return v.map(Number).filter(Boolean);if(typeof v==='string'){try{return JSON.parse(v).map(Number).filter(Boolean);}catch{return [];}}return [];}
 
 function buildPage(template, tool, ctx) {
-  const { tools, rankById, creatorByToolId, slugById } = ctx;
+  const { tools, rankById, rankByTitle, creatorByToolId, slugById } = ctx;
   const slug = slugById.get(Number(tool.id)) || slugify(tool.slug || tool.title);
   const title = `${esc(tool.title)} | M2ZPicks`;
   const category = tool.category || 'Uncategorized';
@@ -64,7 +59,7 @@ function buildPage(template, tool, ctx) {
   const idx = tools.findIndex((t)=>Number(t.id)===Number(tool.id));
   const prev = idx>0 ? tools[idx-1] : null;
   const next = idx>=0 && idx<tools.length-1 ? tools[idx+1] : null;
-  const rank = rankById.get(Number(tool.id));
+  const rank = rankById.get(Number(tool.id)) || rankByTitle.get(String(tool.title||'').trim().toLowerCase());
   const creators = creatorByToolId.get(Number(tool.id)) || [];
   const related = tools.filter((t)=>String(t.category)===String(category) && Number(t.id)!==Number(tool.id)).slice(0,4);
 
@@ -108,7 +103,12 @@ for (const t of sortedTools){
   slugById.set(Number(t.id), s);
 }
 
-const rankById = new Map((ranks||[]).map(r=>[Number(r.id),r]));
+const rankById = new Map((ranks||[])
+  .map(r=>[Number(r.id||r.tool_id||r.toolId||0),r])
+  .filter(([id])=>Number.isFinite(id)&&id>0));
+const rankByTitle = new Map((ranks||[])
+  .map(r=>[String(r.title||r.name||'').trim().toLowerCase(),r])
+  .filter(([k])=>k));
 const creatorByToolId = new Map();
 for (const c of creators || []) {
   for (const id of parsePickIds(c.pick_ids || c.picks_ids)) {
@@ -118,7 +118,7 @@ for (const c of creators || []) {
 }
 
 for (const t of sortedTools) {
-  const html = buildPage(template, t, { tools: sortedTools, rankById, creatorByToolId, slugById });
+  const html = buildPage(template, t, { tools: sortedTools, rankById, rankByTitle, creatorByToolId, slugById });
   await fs.writeFile(path.join(OUT_DIR, `${slugById.get(Number(t.id))}.html`), html, 'utf8');
 }
 
