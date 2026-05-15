@@ -17,10 +17,13 @@ async function fetchAppwriteCollection(collectionId){
   const endpoint='https://sfo.cloud.appwrite.io/v1';
   const db='m2zpicks-db';
   const project='m2zpicks';
+  const apiKey = process.env.APPWRITE_API_KEY || '';
   const out=[]; let offset=0; let total=Infinity;
   while(offset<total){
     const q=new URLSearchParams(); q.append('queries[]','limit(100)'); q.append('queries[]',`offset(${offset})`);
-    const r=await fetch(`${endpoint}/databases/${db}/collections/${collectionId}/documents?${q.toString()}`,{headers:{'x-appwrite-project':project}});
+    const headers = {'x-appwrite-project':project};
+    if (apiKey) headers['x-appwrite-key'] = apiKey;
+    const r=await fetch(`${endpoint}/databases/${db}/collections/${collectionId}/documents?${q.toString()}`,{headers});
     if(!r.ok) break;
     const j=await r.json(); const docs=j.documents||[];
     total=Number(j.total||0); out.push(...docs); if(!docs.length) break; offset+=docs.length;
@@ -48,6 +51,9 @@ async function loadAll() {
 }
 
 function parsePickIds(v){if(Array.isArray(v)) return v.map(Number).filter(Boolean);if(typeof v==='string'){try{return JSON.parse(v).map(Number).filter(Boolean);}catch{return [];}}return [];}
+function toolNumericId(t){
+  return Number(t?.id ?? t?.tool_id ?? t?.toolId ?? 0);
+}
 
 function buildPage(template, tool, ctx) {
   const { tools, rankById, rankByTitle, creatorByToolId, slugById } = ctx;
@@ -56,12 +62,12 @@ function buildPage(template, tool, ctx) {
   const category = tool.category || 'Uncategorized';
   const desc = esc(tool.description || '');
 
-  const idx = tools.findIndex((t)=>Number(t.id)===Number(tool.id));
+  const idx = tools.findIndex((t)=>toolNumericId(t)===toolNumericId(tool));
   const prev = idx>0 ? tools[idx-1] : null;
   const next = idx>=0 && idx<tools.length-1 ? tools[idx+1] : null;
-  const rank = rankById.get(Number(tool.id)) || rankByTitle.get(String(tool.title||'').trim().toLowerCase());
-  const creators = creatorByToolId.get(Number(tool.id)) || [];
-  const related = tools.filter((t)=>String(t.category)===String(category) && Number(t.id)!==Number(tool.id)).slice(0,4);
+  const rank = rankById.get(toolNumericId(tool)) || rankByTitle.get(String(tool.title||'').trim().toLowerCase());
+  const creators = creatorByToolId.get(toolNumericId(tool)) || [];
+  const related = tools.filter((t)=>String(t.category)===String(category) && toolNumericId(t)!==toolNumericId(tool)).slice(0,4);
 
   const details = `<div class="detail-head"><img class="tool-logo tool-logo-lg" src="${logo(tool.link,128)}" alt="${esc(tool.title)} logo"><div><h1>${esc(tool.title)}</h1><a class="badge badge-link" href="../category.html?name=${encodeURIComponent(category)}">${esc(category)}</a></div></div><p>${desc}</p><div class="card-actions"><button class="btn btn-secondary">☆</button><a class="btn btn-primary" href="${esc(tool.link||'#')}" target="_blank" rel="noopener noreferrer">Visit Tool</a><a class="btn btn-secondary" href="../list.html">Back to list</a></div><div class="tool-nav">${prev?`<a class="btn btn-secondary" href="./${slugById.get(Number(prev.id))}.html">← ${esc(prev.title)}</a>`:''}${next?`<a class="btn btn-secondary" href="./${slugById.get(Number(next.id))}.html">${esc(next.title)} →</a>`:''}</div>${rank?`<div class="detail-rank-card"><div class="rank-card-head"><div><span class="rank-eyebrow">AI Benchmark</span><h3>📊 Rankings Score</h3></div><a href="../rankings.html" class="text-link rank-link">See full rankings →</a></div><div class="rank-scores-row"><div class="rank-score-item"><span class="score-num">${score(rank.overall)}</span><span class="score-lbl">Overall</span><span class="score-bar"><span style="width:${score(rank.overall)}%"></span></span></div><div class="rank-score-item"><span class="score-num">${score(rank.reasoning)}</span><span class="score-lbl">Reasoning</span><span class="score-bar"><span style="width:${score(rank.reasoning)}%"></span></span></div><div class="rank-score-item"><span class="score-num">${score(rank.coding)}</span><span class="score-lbl">Coding</span><span class="score-bar"><span style="width:${score(rank.coding)}%"></span></span></div><div class="rank-score-item"><span class="score-num">${score(rank.vision)}</span><span class="score-lbl">Vision</span><span class="score-bar"><span style="width:${score(rank.vision)}%"></span></span></div><div class="rank-score-item rank-context-item"><span class="score-num context-num">${contextFmt(rank.context)}</span><span class="score-lbl">Context</span><span class="score-note">window</span></div></div></div>`:''}${creators.length?`<div class="creator-endorsements"><h3>🎬 Creator Endorsed</h3>${creators.map(c=>`<a class="creator-chip" href="../creators.html?slug=${esc(c.slug||'')}"><img src="${esc(c.avatar_url||'../fallback.png')}">${esc(c.name||'Creator')}</a>`).join('')}</div>`:''}`;
 
@@ -93,14 +99,14 @@ const template = await fs.readFile(TEMPLATE_PATH,'utf8');
 const { tools, ranks, creators } = await loadAll();
 await fs.mkdir(OUT_DIR, { recursive: true });
 
-const sortedTools = tools.slice().sort((a,b)=>Number(a.id)-Number(b.id));
+const sortedTools = tools.slice().sort((a,b)=>toolNumericId(a)-toolNumericId(b));
 const slugById = new Map();
 const used = new Set();
 for (const t of sortedTools){
   let s = slugify(t.slug || t.title);
-  if (used.has(s)) s = `${s}-${t.id}`;
+  if (used.has(s)) s = `${s}-${toolNumericId(t)}`;
   used.add(s);
-  slugById.set(Number(t.id), s);
+  slugById.set(toolNumericId(t), s);
 }
 
 const rankById = new Map((ranks||[])
@@ -119,7 +125,8 @@ for (const c of creators || []) {
 
 for (const t of sortedTools) {
   const html = buildPage(template, t, { tools: sortedTools, rankById, rankByTitle, creatorByToolId, slugById });
-  await fs.writeFile(path.join(OUT_DIR, `${slugById.get(Number(t.id))}.html`), html, 'utf8');
+  await fs.writeFile(path.join(OUT_DIR, `${slugById.get(toolNumericId(t))}.html`), html, 'utf8');
 }
 
 console.log(`Generated ${sortedTools.length} static tool pages into /tools`);
+console.log(`Ranks loaded: ${ranks.length}, Creators loaded: ${creators.length}`);
